@@ -119,8 +119,113 @@ dados %>%
 
 # Lição Z-score
 
-dados %>%
+df <- dados %>%
     rowwise() %>%
     group_by(type) %>%
-    mutate(Z_score = (height - mean(height)) / sd(height)) %>%
+    mutate(Z_score = (height - mean(height)) / sd(height))
+
+library(ggplot2)
+
+dados %>%
+    pull(type) %>%
+    unique()
+
+ggplot(df) +
+    geom_density(aes(x = Z_score, color = type))
+
+# Renomear colunas e movendo elas - rename e relocate
+
+dados %>%
+    group_by(type) %>%
+    summarise(
+        media_altura = mean(height),
+        media_peso = mean(weight), N = n()
+    ) %>%
+    arrange(media_altura) %>%
+    rename("Número de pokemons" = N) %>%
+    relocate("Número de pokemons")
+
+# Ifelse
+
+dados %>%
+    mutate(tamanho = ifelse(height < 15, "baixinho", "altão")) %>%
     head()
+
+# Posso fazer uma função para isso
+
+ff <- function(y) {
+    resposta <- c()
+    for (i in 1:length(y)) {
+        if (y[i] <= 15) {
+            resposta[i] <- "baixinho"
+        } else {
+            resposta[i] <- "altão"
+        }
+    }
+    return(resposta)
+}
+
+dados %>%
+    mutate(tamanho = ff(height)) %>%
+    head()
+
+# case_when
+
+dados %>%
+    mutate(tamanho = case_when(
+        height < 5 ~ "baixinho",
+        height < 10 ~ "pequeno",
+        height < 15 ~ "médio",
+        TRUE ~ "altão"
+    )) %>%
+    head()
+
+# rbind e cbind
+df_A <- data.frame(A = c(1, 2, 3, 4), B = c(5, 6, 3, 2))
+df_B <- data.frame(A = c(12, 22, 32, 42), B = c(7, 5, 3, 2))
+
+rbind(df_A, df_B)
+
+df_A <- data.frame(A = c(1, 2, 3, 4), B = c(5, 6, 3, 2))
+df_B <- data.frame(A = c(12, 22, 32, 42), C = c(7, 5, 3, 2))
+
+bind_rows(df_A, df_B)
+
+df_A <- data.frame(A = c(1, 2, 3, 4))
+df_B <- data.frame(B = c(12, 22, 32, 42))
+
+cbind(df_A, df_B)
+
+# Join - juntar dois dataframe
+
+df_means <- dados %>%
+    group_by(type) %>%
+    summarise(media_h = mean(height), media_w = mean(weight))
+
+df_means %>% filter(!grepl("^g", type)) # Excluindo quem começa com g (o ^ indica isso) na coluna type
+
+novo_grupo <- data.frame(
+    type = "Vozes da minha cabeça",
+    media_h = 1000,
+    media_w = 400.82
+)
+
+df_means <- rbind(df_means, novo_grupo)
+
+df_means
+
+df <- full_join(dados, df_means, by = "type")
+df
+
+# Full junta todo mundo, insere NA onde não da 'match'
+# Inner em comum
+# Left - mantem o dataframe da esquerda, se não tem 'match' com o dataframe da direita, completa com NA
+
+
+df_means <- dados %>%
+    group_by(type, secundary.type) %>%
+    summarise(media_h = mean(height), media_w = mean(weight))
+
+df <- right_join(dados, df_means, by = c("type", "secundary.type"))
+
+df

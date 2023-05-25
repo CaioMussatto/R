@@ -205,9 +205,9 @@ df_means <- dados %>%
 df_means %>% filter(!grepl("^g", type)) # Excluindo quem começa com g (o ^ indica isso) na coluna type
 
 novo_grupo <- data.frame(
-    type = "Vozes da minha cabeça",
-    media_h = 1000,
-    media_w = 400.82
+    type = "bug",
+    media_h = 10,
+    media_w = 800
 )
 
 df_means <- rbind(df_means, novo_grupo)
@@ -229,3 +229,30 @@ df_means <- dados %>%
 df <- right_join(dados, df_means, by = c("type", "secundary.type"))
 
 df
+
+library(tidyr)
+
+dados <- readr::read_rds("ferramentasdemodelagem/R/Dados/imdb.rds")
+
+df <- dados %>% select(titulo, orcamento, receita, receita_eua)
+
+df_long <- df %>%
+    slice(1:10) %>%
+    tidyr::pivot_longer(2:4, values_to = "valor", names_to = "Tipo de valor")
+
+df_long <- df %>%
+    slice(1:10) %>%
+    tidyr::pivot_longer(2:4, values_to = "valor", names_to = "Tipo de Valor")
+
+
+library(ggplot2)
+
+ggplot() +
+    geom_col(
+        data = df_long, aes(x = titulo, y = valor, fill = `Tipo de Valor`),
+        position = position_dodge2()
+    ) +
+    theme_bw() +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1.0)
+    )

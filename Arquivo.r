@@ -256,3 +256,31 @@ ggplot() +
     theme(
         axis.text.x = element_text(angle = 45, hjust = 1.0)
     )
+
+dados <- read.csv("Pokemon_full.csv")
+
+ggplot() +
+    geom_point(data = dados, aes(x = height, y = weight))
+
+ggplot() +
+    geom_point(data = dados, aes(x = height, y = weight, color = type))
+
+dados <- dados %>%
+    mutate(tamanho = case_when(
+        height < 5 ~ "baixinho",
+        height < 10 ~ "pequeno",
+        height < 15 ~ "médio",
+        TRUE ~ "altão"
+    ))
+
+ggplot() +
+    geom_point(data = dados, aes(x = height, y = weight, color = tamanho)) +
+    scale_color_manual(values = c("blue", "red", "grey", "purple"))
+
+ggplot() +
+    geom_point(data = dados, aes(x = height, y = weight, color = tamanho)) +
+    scale_color_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), label = c("Baixinho", "Pequeno", "Médio", "Teste"), name = "Classe de tamanho")
+
+ggplot() +
+    geom_point(data = dados, aes(x = height, y = weight, color = tamanho), shape = 21) +
+    scale_color_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), label = c("Baixinho", "Pequeno", "Médio", "Teste"), name = "Classe de tamanho")

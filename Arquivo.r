@@ -284,3 +284,106 @@ ggplot() +
 ggplot() +
     geom_point(data = dados, aes(x = height, y = weight, color = tamanho), shape = 21) +
     scale_color_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), label = c("Baixinho", "Pequeno", "Médio", "Teste"), name = "Classe de tamanho")
+
+dados <- dados %>%
+    dplyr::mutate(
+        tamanho = dplyr::case_when(
+            height < 5 ~ "baixinho",
+            height < 50 ~ "pequeno",
+            height < 100 ~ "médio",
+            TRUE ~ "altão"
+        )
+    )
+
+ggplot() +
+    geom_point(data = dados, aes(x = height, y = weight, color = tamanho, fill = tamanho, shape = tamanho)) +
+    scale_color_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_fill_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_shape_manual(values = c(21, 22, 23, 24), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_y_continuous(limits = c(0, 12000), expand = c(0, 0), name = "Peso") +
+    scale_x_continuous(limits = c(0, 250), expand = c(0, 0), name = "Altura") +
+    theme_bw()
+
+ggplot() +
+    geom_point(data = dados, aes(x = height, y = weight, color = tamanho, fill = tamanho, shape = tamanho)) +
+    scale_color_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_fill_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_shape_manual(values = c(21, 22, 23, 24), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_y_continuous(limits = c(0, 12000), expand = c(0, 0), name = "Peso") +
+    scale_x_continuous(limits = c(0, 250), expand = c(0, 0), name = "Altura")
+
+# Mudando as cores do fundo
+
+ggplot() +
+    geom_point(data = dados, aes(x = height, y = weight, color = tamanho, fill = tamanho, shape = tamanho)) +
+    scale_color_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_fill_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_shape_manual(values = c(21, 22, 23, 24), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_y_continuous(limits = c(0, 12000), expand = c(0, 0), name = "Peso") +
+    scale_x_continuous(limits = c(0, 250), expand = c(0, 0), name = "Altura") +
+    theme_bw()
+
+library(ggthemes)
+
+ggplot() +
+    geom_point(data = dados, aes(x = height, y = weight, color = tamanho, fill = tamanho, shape = tamanho)) +
+    scale_color_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_fill_manual(values = c("blue", "red", "grey", "purple"), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_shape_manual(values = c(21, 22, 23, 24), breaks = c("baixinho", "pequeno", "médio", "altão"), name = "Classe de tamanho") +
+    scale_y_continuous(limits = c(0, 12000), expand = c(0, 0), name = "Peso") +
+    scale_x_continuous(limits = c(0, 250), expand = c(0, 0), name = "Altura") +
+    theme_clean()
+
+# Graficos de barras
+
+dados %>%
+    group_by(type) %>%
+    summarise(
+        media_h = mean(height),
+        media_w = mean(weight)
+    ) %>%
+    ggplot() +
+    geom_col(aes(x = type, y = media_h))
+
+dados %>%
+    group_by(type) %>%
+    summarise(
+        media_h = mean(height),
+        media_w = mean(weight)
+    ) %>%
+    tidyr::pivot_longer(cols = c("media_h", "media_w"), names_to = "tipo", values_to = "media") %>%
+    ggplot() +
+    geom_col(aes(x = type, y = media, color = tipo))
+
+df <- dados %>%
+    group_by(type) %>%
+    summarise(
+        media_h = mean(height),
+        media_w = mean(weight)
+    )
+
+fator <- max(df$media_w) / max(df$media_h)
+fator
+
+df$media_h <- df$media_h * fator
+
+df %>%
+    tidyr::pivot_longer(cols = c("media_h", "media_w"), names_to = "tipo", values_to = "media") %>%
+    ggplot() +
+    geom_col(aes(x = type, y = media, color = tipo, fill = tipo), position = position_dodge2()) +
+    scale_y_continuous(
+
+        # Features of the first axis
+        name = "Média do peso",
+
+        # Add a second axis and specify its features
+        sec.axis = sec_axis(~ . / fator, name = "Média do altura"),
+        expand = c(0, 0)
+    ) +
+    scale_color_brewer(palette = "Set1") +
+    scale_fill_brewer(palette = "Set1") +
+    theme_bw() +
+    theme(
+        axis.title = element_text(size = 18, face = "bold"),
+        axis.text = element_text(size = 14)
+    )

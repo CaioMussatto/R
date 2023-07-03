@@ -117,6 +117,18 @@ dados %>%
     select(height, nova_var) %>%
     head(30)
 
+# Lição Filtragem pokemon
+
+dados %>%
+    group_by(type) %>%
+    mutate(
+        media_attack = mean(attack)
+    ) %>%
+    filter(attack > media_attack) %>%
+    select(-media_attack) -> df
+
+df
+
 # Lição Z-score
 
 df <- dados %>%
@@ -257,6 +269,12 @@ ggplot() +
         axis.text.x = element_text(angle = 45, hjust = 1.0)
     )
 
+# Lição cor()
+cor_orcamento_e_receita <- cor(df$orcamento, df$receita, use = "na.or.complete")
+cor_orcamento_e_receita_eua <- cor(df$orcamento, df$receita_eua, use = "na.or.complete")
+cor_receita_e_receita_eua <- cor(df$receita, df$receita_eua, use = "na.or.complete")
+cor_orcamento_e_receita_eua
+
 dados <- read.csv("Pokemon_full.csv")
 
 ggplot() +
@@ -355,35 +373,47 @@ dados %>%
     ggplot() +
     geom_col(aes(x = type, y = media, color = tipo))
 
+# Lição Arrumar o plot no Rmarkdown para ficar mais bonito
+library(ggplot2)
+
 df <- dados %>%
     group_by(type) %>%
     summarise(
-        media_h = mean(height),
-        media_w = mean(weight)
+        Altura = mean(height),
+        Peso = mean(weight)
     )
 
-fator <- max(df$media_w) / max(df$media_h)
+fator <- max(df$Peso) / max(df$Altura)
 fator
 
-df$media_h <- df$media_h * fator
+df$Altura <- df$Altura * fator
+
+tipos_colors <- c("#FF0000", "#0000FF")
+
+tipo_colors <- c("#66CC33", "#27064f", "#6fccf7", "#FFD400", "#FFA8E5",
+                 "#4f4834", "#FFA500", "#0742a8", "#A800FF", "#5EB300",
+                 "#8A4C00", "#00D0FF", "#C8C8C8", "#9B3D82", "#D80064",
+                 "#964B00", "#808080", "#007FFF")
+
 
 df %>%
-    tidyr::pivot_longer(cols = c("media_h", "media_w"), names_to = "tipo", values_to = "media") %>%
-    ggplot() +
-    geom_col(aes(x = type, y = media, color = tipo, fill = tipo), position = position_dodge2()) +
-    scale_y_continuous(
+  tidyr::pivot_longer(cols = c("Altura", "Peso"), names_to = "tipo", values_to = "media") %>%
+  ggplot() +
+  geom_col(aes(x = type, y = media, color = tipo, fill = type), position = position_dodge2()) +
+  scale_y_continuous(
+    name = "Média do peso",
+    sec.axis = sec_axis(~. / fator, name = "Média do altura"),
+    expand = c(0, 0)
+  ) +
+  scale_color_manual(values = tipos_colors) +
+  scale_fill_manual(values = type_colors) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 16,face = "bold"),
+    axis.text = element_text(size = 14),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) + labs(color = "Média", x = "Tipos de pokémon", fill = "Tipos de pokémon", 
+  title = "Média da Altura e do Peso para cada tipo de pokémon da primeira geração")
 
-        # Features of the first axis
-        name = "Média do peso",
-
-        # Add a second axis and specify its features
-        sec.axis = sec_axis(~ . / fator, name = "Média do altura"),
-        expand = c(0, 0)
-    ) +
-    scale_color_brewer(palette = "Set1") +
-    scale_fill_brewer(palette = "Set1") +
-    theme_bw() +
-    theme(
-        axis.title = element_text(size = 18, face = "bold"),
-        axis.text = element_text(size = 14)
-    )
+ggsave("a.png", a, width = 15, height = 15)

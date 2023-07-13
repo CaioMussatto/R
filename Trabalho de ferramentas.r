@@ -110,20 +110,17 @@ a <- Brazil_map +
         data = teste2,
         aes(
             x = as.numeric(longitude),
-            y = as.numeric(latitude),  size = media_morte)
-    ) + scale_size(breaks = c(1000, 5000, 10000, )) theme(legend.position = "right") + theme(title = element_text(size = 5))
+            y = as.numeric(latitude), size = media_morte, color = media_morte
+        )
+    ) + theme(legend.position = "right") + theme(title = element_text(size = 5))
 
 
-ggsave("a.png", a, width = 10, height = 10, dpi = 300)
-
-head(teste2)
-
-#2021
+# 2021
 
 colnames(covid2021)
 
 covid2021 <- covid2021 %>%
-  select(c("date", "state", "city", "deaths"))
+    select(c("date", "state", "city", "deaths"))
 
 covid2021 <- covid2021 %>% filter(date >= "2021-05-1" & date <= "2021-05-31")
 
@@ -150,22 +147,22 @@ covid2021$regiao[regiao_sudeste] <- "Sudeste"
 covid2021$regiao[regiao_sul] <- "Sul"
 
 grafico <- function(filtro, tipo) {
-  filtro <- str_to_title(filtro)
-  covid2021 <- subset(covid2021, regiao == filtro)
-  if (tipo == "coluna") {
-    imagem <- ggplot(covid2021, aes(state, deaths, fill = state)) +
-      geom_col() +
-      ylim(NA, 29400)
-  } else if (tipo == "linha") {
-    imagem <- ggplot(covid2021, aes(date, deaths, color = state)) +
-      geom_line() +
-      facet_wrap(~state) +
-      scale_x_date(date_labels = "%d") +
-      ylim(NA, 2000)
-  } else {
-    print("Os tipos aceitos são 'coluna' e 'linha'")
-  }
-  return(imagem)
+    filtro <- str_to_title(filtro)
+    covid2021 <- subset(covid2021, regiao == filtro)
+    if (tipo == "coluna") {
+        imagem <- ggplot(covid2021, aes(state, deaths, fill = state)) +
+            geom_col() +
+            ylim(NA, 29400)
+    } else if (tipo == "linha") {
+        imagem <- ggplot(covid2021, aes(date, deaths, color = state)) +
+            geom_line() +
+            facet_wrap(~state) +
+            scale_x_date(date_labels = "%d") +
+            ylim(NA, 2000)
+    } else {
+        print("Os tipos aceitos são 'coluna' e 'linha'")
+    }
+    return(imagem)
 }
 
 grafico("nordeste", "linha")
@@ -193,13 +190,13 @@ worldmap <- map_data("world")
 Brazil <- worldmap[which(worldmap$region == "Brazil"), ]
 
 Brazil_map <- ggplot() +
-  geom_polygon(
-    data = Brazil,
-    aes(x = long, y = lat, group = group),
-    fill = "white", color = "black"
-  ) +
-  coord_fixed(ratio = 1.3, xlim = c(-74, -34), ylim = c(-33, 4)) +
-  theme_minimal()
+    geom_polygon(
+        data = Brazil,
+        aes(x = long, y = lat, group = group),
+        fill = "white", color = "black"
+    ) +
+    coord_fixed(ratio = 1.3, xlim = c(-74, -34), ylim = c(-33, 4)) +
+    theme_minimal()
 Brazil_map
 
 cordenadas_estados <- read.csv("estados.csv")
@@ -207,20 +204,19 @@ cordenadas_estados <- read.csv("estados.csv")
 teste <- covid2021 %>% full_join(cordenadas_estados, by = c("regiao"), multiple = "all")
 
 teste2 <- teste %>%
-  group_by(state) %>%
-  mutate(media_morte = mean(deaths))
+    group_by(state) %>%
+    mutate(media_morte = mean(deaths))
 
 head(teste2$media_morte)
 
-teste$discrete <- cut(teste$media_morte, breaks = 3, labels = c(0, 50, 1000))
-
 a <- Brazil_map +
-  geom_point(
-    data = teste2,
-    aes(
-      x = as.numeric(longitude),
-      y = as.numeric(latitude),  size = media_morte)
-  ) + scale_size(breaks = c(1000, 5000, 10000, )) theme(legend.position = "right") + theme(title = element_text(size = 5))
+    geom_point(
+        data = teste2,
+        aes(
+            x = as.numeric(longitude),
+            y = as.numeric(latitude), size = media_morte, color = media_morte
+        )
+    ) + theme(legend.position = "right") + theme(title = element_text(size = 5))
 
 
 ggsave("a.png", a, width = 10, height = 10, dpi = 300)
